@@ -46,7 +46,8 @@ class MemberControllerTest {
                         .param("passwordConfirm", "password123")
                         .param("name", "홍길동"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/login"));
+                .andExpect(redirectedUrl("/login"))
+                .andExpect(flash().attribute("signupSuccess", true));
         verify(memberService).signup(any(SignupForm.class));
     }
 

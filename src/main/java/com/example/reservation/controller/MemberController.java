@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,7 +25,8 @@ public class MemberController {
 
     /** 컨트롤러는 입력 검증 결과 처리와 화면 이동만 한다. 가입 규칙은 MemberService에 있다. */
     @PostMapping("/signup")
-    public String signup(@Valid @ModelAttribute("form") SignupForm form, BindingResult bindingResult) {
+    public String signup(@Valid @ModelAttribute("form") SignupForm form, BindingResult bindingResult,
+                         RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "member/signup";
         }
@@ -34,8 +36,8 @@ public class MemberController {
             bindingResult.rejectValue("loginId", "duplicate", "이미 사용 중인 아이디입니다.");
             return "member/signup";
         }
-        // 기본 로그인 화면은 /login?signup 같은 쿼리를 인식하지 못해 404가 나므로 /login 으로 보낸다.
-        // ("가입 완료" 안내는 로그인 화면을 직접 만들 때 추가)
+        // flash 속성: 리다이렉트 직후 한 번만 보이고 사라지는 값 (새로고침하면 안내 문구가 없어짐)
+        redirectAttributes.addFlashAttribute("signupSuccess", true);
         return "redirect:/login";
     }
 }
