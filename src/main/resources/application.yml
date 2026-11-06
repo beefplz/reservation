@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: reservation
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/reservation?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    # 비밀번호는 환경변수 DB_PASSWORD 로만 주입 (파일에 쓰지 않음)
+    password: ${DB_PASSWORD}
+  sql:
+    init:
+      # 테이블은 schema.sql 을 직접 실행해서 만든다.
+      # always 로 두면 재시작할 때마다 room INSERT 가 UNIQUE 제약에 걸려 기동 실패.
+      mode: never
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.example.reservation.domain
+  configuration:
+    map-underscore-to-camel-case: true   # login_id -> loginId
+
+logging:
+  level:
+    com.example.reservation.mapper: debug   # 실행되는 SQL 확인용
