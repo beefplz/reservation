@@ -1,0 +1,5 @@
+# 테스트 전용 설정. @ActiveProfiles("test") 일 때 application.yml 위에 덮어쓴다.
+# 개발 DB(reservation)를 더럽히지 않도록 같은 컨테이너의 reservation_test DB를 쓴다.
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/reservation_test?serverTimezone=Asia/Seoul&characterEncoding=UTF-8

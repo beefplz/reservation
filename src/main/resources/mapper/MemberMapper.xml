@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.reservation.mapper.MemberMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO member (login_id, password, name, role)
+        VALUES (#{loginId}, #{password}, #{name}, #{role})
+    </insert>
+
+    <select id="existsByLoginId" resultType="boolean">
+        SELECT EXISTS (SELECT 1 FROM member WHERE login_id = #{loginId})
+    </select>
+
+    <select id="findByLoginId" resultType="Member">
+        SELECT id, login_id, password, name, role, created_at
+        FROM member
+        WHERE login_id = #{loginId}
+    </select>
+
+</mapper>

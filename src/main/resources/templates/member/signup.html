@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입 - 회의실 예약</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 40px auto; }
+        label { display: block; margin-top: 12px; }
+        input { width: 100%; padding: 6px; box-sizing: border-box; }
+        .error { color: #c00; font-size: 0.9em; }
+        button { margin-top: 16px; padding: 8px 16px; }
+    </style>
+</head>
+<body>
+<h1>회원가입</h1>
+
+<!-- th:object 로 SignupForm 과 연결, th:field 가 name/value/id 를 채워준다 -->
+<form th:action="@{/signup}" th:object="${form}" method="post">
+
+    <label for="loginId">아이디</label>
+    <input type="text" th:field="*{loginId}">
+    <div class="error" th:if="${#fields.hasErrors('loginId')}" th:errors="*{loginId}"></div>
+
+    <label for="password">비밀번호</label>
+    <input type="password" th:field="*{password}">
+    <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+
+    <label for="passwordConfirm">비밀번호 확인</label>
+    <input type="password" th:field="*{passwordConfirm}">
+    <div class="error" th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}"></div>
+    <div class="error" th:if="${#fields.hasErrors('passwordMatching')}" th:errors="*{passwordMatching}"></div>
+
+    <label for="name">이름</label>
+    <input type="text" th:field="*{name}">
+    <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+
+    <button type="submit">가입하기</button>
+</form>
+
+<p>이미 계정이 있나요? <a th:href="@{/login}">로그인</a></p>
+</body>
+</html>
