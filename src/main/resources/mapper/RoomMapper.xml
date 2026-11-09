@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.reservation.mapper.RoomMapper">
+
+    <sql id="columns">
+        id, name, location, capacity, active, created_at
+    </sql>
+
+    <select id="findAllActive" resultType="Room">
+        SELECT <include refid="columns"/>
+        FROM room
+        WHERE active = 1
+        ORDER BY name
+    </select>
+
+    <select id="findAll" resultType="Room">
+        SELECT <include refid="columns"/>
+        FROM room
+        ORDER BY name
+    </select>
+
+    <select id="findById" resultType="Room">
+        SELECT <include refid="columns"/>
+        FROM room
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByIdForUpdate" resultType="Room">
+        SELECT <include refid="columns"/>
+        FROM room
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
+    <select id="existsByName" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM room
+            WHERE name = #{name}
+            <if test="excludeId != null">
+                AND id != #{excludeId}
+            </if>
+        )
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO room (name, location, capacity)
+        VALUES (#{name}, #{location}, #{capacity})
+    </insert>
+
+    <update id="update">
+        UPDATE room
+        SET name = #{name},
+            location = #{location},
+            capacity = #{capacity}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateActive">
+        UPDATE room
+        SET active = #{active}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countUpcomingReservations" resultType="int">
+        SELECT COUNT(*)
+        FROM reservation
+        WHERE room_id = #{roomId}
+          AND status IN ('PENDING', 'APPROVED')
+          AND end_time &gt; NOW()
+    </select>
+
+</mapper>

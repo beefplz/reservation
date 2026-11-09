@@ -14,6 +14,11 @@
 <p><strong th:text="${loginMember.name}">홍길동</strong>님 환영합니다.
     <span th:if="${loginMember.role.name() == 'ADMIN'}">(관리자)</span></p>
 
+<ul>
+    <li><a th:href="@{/rooms}">회의실 보기</a></li>
+    <li th:if="${loginMember.role.name() == 'ADMIN'}"><a th:href="@{/admin/rooms}">회의실 관리</a></li>
+</ul>
+
 <!-- 로그아웃은 POST + CSRF 토큰. GET 링크로 하면 다른 사이트가 몰래 로그아웃시킬 수 있다 -->
 <form th:action="@{/logout}" method="post">
     <button type="submit">로그아웃</button>

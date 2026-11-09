@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회의실 등록/수정 - 회의실 예약</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 40px auto; }
+        label { display: block; margin-top: 12px; }
+        input { width: 100%; padding: 6px; box-sizing: border-box; }
+        .error { color: #c00; font-size: 0.9em; }
+        button { margin-top: 16px; padding: 8px 16px; }
+    </style>
+</head>
+<body>
+<!-- 등록과 수정이 같은 화면을 쓴다. roomId 가 있으면 수정이다 -->
+<h1 th:text="${roomId == null} ? '회의실 등록' : '회의실 수정'">회의실 등록</h1>
+
+<form th:action="${roomId == null} ? @{/admin/rooms} : @{/admin/rooms/{id}(id=${roomId})}"
+      th:object="${form}" method="post">
+
+    <label for="name">이름</label>
+    <input type="text" th:field="*{name}">
+    <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+
+    <label for="location">위치</label>
+    <input type="text" th:field="*{location}">
+    <div class="error" th:if="${#fields.hasErrors('location')}" th:errors="*{location}"></div>
+
+    <label for="capacity">수용 인원</label>
+    <input type="number" th:field="*{capacity}">
+    <div class="error" th:if="${#fields.hasErrors('capacity')}" th:errors="*{capacity}"></div>
+
+    <button type="submit">저장</button>
+</form>
+
+<p><a th:href="@{/admin/rooms}">목록으로</a></p>
+</body>
+</html>

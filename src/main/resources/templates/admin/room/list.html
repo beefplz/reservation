@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회의실 관리 - 회의실 예약</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+        form { display: inline; }
+        .error { color: #c00; }
+        .inactive { color: #999; }
+    </style>
+</head>
+<body>
+<h1>회의실 관리</h1>
+
+<p class="error" th:if="${errorMessage}" th:text="${errorMessage}">오류 메시지</p>
+<p><a th:href="@{/admin/rooms/new}">회의실 등록</a></p>
+
+<table>
+    <thead>
+    <tr><th>이름</th><th>위치</th><th>수용 인원</th><th>상태</th><th>관리</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="room : ${rooms}" th:classappend="${room.active} ? '' : 'inactive'">
+        <td th:text="${room.name}">회의실 A</td>
+        <td th:text="${room.location}">본관 3층</td>
+        <td th:text="|${room.capacity}명|">6명</td>
+        <td th:text="${room.active} ? '활성' : '비활성'">활성</td>
+        <td>
+            <a th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">수정</a>
+            <!-- 상태를 바꾸는 요청이므로 링크(GET)가 아니라 POST + CSRF 토큰으로 보낸다 -->
+            <form th:if="${room.active}" th:action="@{/admin/rooms/{id}/deactivate(id=${room.id})}" method="post">
+                <button type="submit">비활성화</button>
+            </form>
+            <form th:unless="${room.active}" th:action="@{/admin/rooms/{id}/activate(id=${room.id})}" method="post">
+                <button type="submit">재활성화</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<p><a th:href="@{/}">처음으로</a></p>
+</body>
+</html>

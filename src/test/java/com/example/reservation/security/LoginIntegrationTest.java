@@ -100,9 +100,9 @@ class LoginIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("ADMIN 은 /admin/** 권한 검사를 통과한다 (아직 화면이 없어서 404)")
+    @DisplayName("ADMIN 은 /admin/** 권한 검사를 통과한다")
     void admin_allowedForAdmin() throws Exception {
         mvc.perform(get("/admin/rooms"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 }
