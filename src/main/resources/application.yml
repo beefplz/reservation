@@ -7,6 +7,14 @@ spring:
     username: root
     # 비밀번호는 환경변수 DB_PASSWORD 로만 주입 (파일에 쓰지 않음)
     password: ${DB_PASSWORD}
+  mvc:
+    view:
+      # JSP 뷰 리졸버(InternalResourceViewResolver): "room/list" → /WEB-INF/views/room/list.jsp
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  thymeleaf:
+    # Thymeleaf 뷰 리졸버가 먼저 실행되므로, JSP 로 만든 화면 이름은 Thymeleaf 가 건너뛰게 한다
+    excluded-view-names: room/*
   sql:
     init:
       # 테이블은 schema.sql 을 직접 실행해서 만든다.

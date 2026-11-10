@@ -1,5 +1,6 @@
 package com.example.reservation.config;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -20,6 +21,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // Security 6 은 컨트롤러 → JSP 로 넘기는 forward 와 오류 화면(error)에도 권한 검사를 한다.
+                        // 원래 요청(/rooms 등)에서 이미 검사가 끝났으므로 내부 이동은 허용한다.
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         // 로그인 없이 접근 가능한 경로
                         .requestMatchers("/signup", "/login", "/css/**", "/js/**", "/error").permitAll()
                         // 관리자 기능(회의실 관리, 예약 승인)은 ADMIN 만

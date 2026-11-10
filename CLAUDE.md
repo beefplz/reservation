@@ -5,7 +5,11 @@
 ## 기술 스택
 - Java 17, Spring Boot, Gradle
 - MyBatis (XML 매퍼: src/main/resources/mapper/), MySQL 8 (Docker 컨테이너 reservation-db, localhost:3306)
-- Spring Security (세션 로그인, USER / ADMIN 권한), Thymeleaf, Validation, Lombok
+- Spring Security (세션 로그인, USER / ADMIN 권한), Validation, Lombok
+- 뷰: Thymeleaf(src/main/resources/templates/) + JSP/JSTL(src/main/webapp/WEB-INF/views/) 공존
+  - JSP 화면: 회의실 목록(/rooms). JSP 뷰 이름은 application.yml의 spring.thymeleaf.excluded-view-names에 추가할 것
+  - JSP에서는 스크립틀릿 금지, EL + JSTL만 사용. 사용자 입력 값은 <c:out>으로 출력
+- 패키징: 실행형 war (내장 Tomcat은 jar 안의 JSP를 지원하지 않음). 실행은 java -jar build/libs/*.war
 - DB 비밀번호는 환경변수 DB_PASSWORD. 코드나 설정 파일에 비밀번호를 쓰지 말 것
 
 ## 테이블

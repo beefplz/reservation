@@ -12,6 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,11 +42,14 @@ class RoomAccessIntegrationTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    @DisplayName("USER 는 회의실 목록을 볼 수 있다")
+    @DisplayName("USER 는 회의실 목록을 볼 수 있고, JSP 로 forward 된다")
     void rooms_userCanList() throws Exception {
+        // MockMvc 는 JSP 를 실제로 그리지 않고 forward 주소만 기록한다.
+        // → JSP 뷰 리졸버(prefix/suffix)가 맞게 동작하는지는 forwardedUrl 로 확인
         mvc.perform(get("/rooms"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("room/list"));
+                .andExpect(view().name("room/list"))
+                .andExpect(forwardedUrl("/WEB-INF/views/room/list.jsp"));
     }
 
     @Test
@@ -70,7 +76,9 @@ class RoomAccessIntegrationTest {
                 .andExpect(redirectedUrl("/admin/rooms"));
 
         mvc.perform(get("/admin/rooms")).andExpect(content().string(containsString(ROOM_NAME)));
-        mvc.perform(get("/rooms")).andExpect(content().string(containsString(ROOM_NAME)));
+        // /rooms 는 JSP 라 응답 본문이 비어 있으므로, 화면에 넘기는 모델(rooms)로 확인
+        mvc.perform(get("/rooms"))
+                .andExpect(model().attribute("rooms", hasItem(hasProperty("name", is(ROOM_NAME)))));
     }
 
     @Test
@@ -105,7 +113,8 @@ class RoomAccessIntegrationTest {
         mvc.perform(post("/admin/rooms/" + id + "/deactivate").with(csrf()))
                 .andExpect(redirectedUrl("/admin/rooms"));
 
-        mvc.perform(get("/rooms")).andExpect(content().string(not(containsString(ROOM_NAME))));
+        mvc.perform(get("/rooms"))
+                .andExpect(model().attribute("rooms", not(hasItem(hasProperty("name", is(ROOM_NAME))))));
         mvc.perform(get("/admin/rooms")).andExpect(content().string(containsString(ROOM_NAME)));
     }
 

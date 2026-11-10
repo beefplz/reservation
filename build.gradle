@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    // 내장 Tomcat 은 실행형 jar 안의 JSP 를 찾지 못한다 → war 로 패키징 (java -jar 로도 실행 가능)
+    id 'war'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -31,6 +33,14 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // JSP + JSTL 3.0 (Spring Boot 3 은 jakarta.* 패키지 → JSTL 도 jakarta 버전). 버전은 Boot 가 관리
+    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api'
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl'
+    // 내장 Tomcat 과 JSP 엔진(Jasper). providedRuntime: 실행형 war 에서는 쓰이고,
+    // 외부 Tomcat 에 배포할 때는 그 Tomcat 의 것을 쓰도록 WEB-INF/lib-provided 로 따로 담긴다
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    providedRuntime 'org.apache.tomcat.embed:tomcat-embed-jasper'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
