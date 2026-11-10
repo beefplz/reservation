@@ -7,8 +7,10 @@
 - MyBatis (XML 매퍼: src/main/resources/mapper/), MySQL 8 (Docker 컨테이너 reservation-db, localhost:3306)
 - Spring Security (세션 로그인, USER / ADMIN 권한), Validation, Lombok
 - 뷰: Thymeleaf(src/main/resources/templates/) + JSP/JSTL(src/main/webapp/WEB-INF/views/) 공존
-  - JSP 화면: 회의실 목록(/rooms). JSP 뷰 이름은 application.yml의 spring.thymeleaf.excluded-view-names에 추가할 것
+  - JSP 화면: 회의실 목록(/rooms), 예약 신청(/reservations/new), 내 예약(/reservations/my)
+  - JSP 뷰 이름은 application.yml의 spring.thymeleaf.excluded-view-names에 추가할 것
   - JSP에서는 스크립틀릿 금지, EL + JSTL만 사용. 사용자 입력 값은 <c:out>으로 출력
+  - JSP 폼은 Spring 폼 태그(form:form)를 사용 → CSRF 토큰 자동 삽입, 값 자동 이스케이프
 - 패키징: 실행형 war (내장 Tomcat은 jar 안의 JSP를 지원하지 않음). 실행은 java -jar build/libs/*.war
 - DB 비밀번호는 환경변수 DB_PASSWORD. 코드나 설정 파일에 비밀번호를 쓰지 말 것
 
@@ -22,6 +24,9 @@
 ## 핵심 규칙
 - 중복 예약 방지: 같은 회의실에서 `start_time < 새 end_time AND end_time > 새 start_time`이고 status가 PENDING/APPROVED인 예약이 있으면 거부
 - 동시 신청 대비: 예약 생성은 @Transactional 안에서 room 행을 SELECT ... FOR UPDATE로 잠근 뒤 검사
+  - 잠금은 트랜잭션의 첫 쿼리여야 함 (REPEATABLE READ 스냅샷이 잠금 전에 고정되지 않도록)
+  - 회의실 비활성화도 같은 room 행을 먼저 잠금. ReservationConcurrencyTest가 이를 검증
+- 예약 시간 규칙: 30분 단위, 같은 날 안, 최대 4시간, 과거 불가. 신청 직후 상태는 PENDING
 - 회의실은 삭제하지 않고 active = 0으로 비활성화
 
 ## 작업 방식

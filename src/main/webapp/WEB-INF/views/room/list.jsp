@@ -18,7 +18,7 @@
 
 <table>
     <thead>
-    <tr><th>이름</th><th>위치</th><th>수용 인원</th><th>사용 여부</th></tr>
+    <tr><th>이름</th><th>위치</th><th>수용 인원</th><th>사용 여부</th><th></th></tr>
     </thead>
     <tbody>
     <%-- rooms: 컨트롤러가 model.addAttribute("rooms", ...) 로 넣은 List<Room> --%>
@@ -30,10 +30,17 @@
             <td><c:out value="${room.capacity}"/>명</td>
             <%-- room.active → Room.isActive() 호출 (boolean 은 is 로 시작하는 getter) --%>
             <td>${room.active ? '사용' : '미사용'}</td>
+            <%-- c:url + c:param: 쿼리 파라미터를 URL 인코딩해서 붙여준다 → /reservations/new?roomId=1 --%>
+            <td>
+                <c:url var="reserveUrl" value="/reservations/new">
+                    <c:param name="roomId" value="${room.id}"/>
+                </c:url>
+                <a href="${reserveUrl}">예약하기</a>
+            </td>
         </tr>
     </c:forEach>
     <c:if test="${empty rooms}">
-        <tr><td colspan="4">이용할 수 있는 회의실이 없습니다.</td></tr>
+        <tr><td colspan="5">이용할 수 있는 회의실이 없습니다.</td></tr>
     </c:if>
     </tbody>
 </table>

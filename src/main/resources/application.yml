@@ -14,7 +14,7 @@ spring:
       suffix: .jsp
   thymeleaf:
     # Thymeleaf 뷰 리졸버가 먼저 실행되므로, JSP 로 만든 화면 이름은 Thymeleaf 가 건너뛰게 한다
-    excluded-view-names: room/*
+    excluded-view-names: room/*, reservation/*
   sql:
     init:
       # 테이블은 schema.sql 을 직접 실행해서 만든다.
