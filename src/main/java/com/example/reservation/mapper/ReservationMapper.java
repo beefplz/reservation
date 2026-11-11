@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface ReservationMapper {
@@ -19,4 +20,9 @@ public interface ReservationMapper {
                          @Param("endTime") LocalDateTime endTime);
 
     List<ReservationView> findByMemberId(Long memberId);
+
+    Optional<Reservation> findById(Long id);
+
+    /** 본인 예약이고, PENDING/APPROVED 이고, 아직 시작 전일 때만 CANCELED 로 바꾼다. 바뀐 행 수를 돌려준다. */
+    int cancel(@Param("id") Long id, @Param("memberId") Long memberId, @Param("now") LocalDateTime now);
 }

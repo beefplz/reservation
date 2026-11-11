@@ -25,6 +25,26 @@
           AND end_time &gt; #{startTime}
     </select>
 
+    <select id="findById" resultType="Reservation">
+        SELECT id, member_id, room_id, start_time, end_time, purpose, status, created_at, updated_at
+        FROM reservation
+        WHERE id = #{id}
+    </select>
+
+    <!--
+        상태 변경은 "조건을 건 UPDATE 한 문장"으로 한다.
+        조건(본인, 현재 상태, 시작 전)을 WHERE 에 넣어서, 확인과 변경이 DB 안에서 한 번에(원자적으로) 일어난다.
+        바뀐 행 수가 0 이면 조건이 맞지 않았거나 다른 요청이 먼저 바꾼 것이다.
+    -->
+    <update id="cancel">
+        UPDATE reservation
+        SET status = 'CANCELED'
+        WHERE id = #{id}
+          AND member_id = #{memberId}
+          AND status IN ('PENDING', 'APPROVED')
+          AND start_time &gt; #{now}
+    </update>
+
     <select id="findByMemberId" resultType="com.example.reservation.dto.ReservationView">
         SELECT r.id, r.room_id, rm.name AS room_name,
                r.start_time, r.end_time, r.purpose, r.status

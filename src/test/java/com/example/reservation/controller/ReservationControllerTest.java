@@ -136,6 +136,52 @@ class ReservationControllerTest {
                 .andExpect(model().attribute("reservations", hasSize(1)));
     }
 
+    @Test
+    @DisplayName("본인 예약을 취소하면 내 예약으로 돌아가고 상태가 CANCELED")
+    void cancel_success() throws Exception {
+        Long id = reservationService.create(memberId,
+                com.example.reservation.service.ReservationTestSupport.form(roomId, "10:00", "11:00"));
+
+        mvc.perform(post("/reservations/" + id + "/cancel").with(csrf()).with(user(loginMember)))
+                .andExpect(redirectedUrl("/reservations/my"))
+                .andExpect(flash().attribute("successMessage", "예약을 취소했습니다."));
+        assertThat(jdbc.queryForObject("SELECT status FROM reservation WHERE id = ?", String.class, id))
+                .isEqualTo("CANCELED");
+    }
+
+    @Test
+    @DisplayName("남의 예약 취소 요청은 404")
+    void cancel_othersReservation_404() throws Exception {
+        Long otherMemberId = insertMember(jdbc);
+        Long id = reservationService.create(otherMemberId,
+                com.example.reservation.service.ReservationTestSupport.form(roomId, "10:00", "11:00"));
+
+        mvc.perform(post("/reservations/" + id + "/cancel").with(csrf()).with(user(loginMember)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("이미 취소한 예약을 다시 취소하면 이유를 보여준다")
+    void cancel_twice() throws Exception {
+        Long id = reservationService.create(memberId,
+                com.example.reservation.service.ReservationTestSupport.form(roomId, "10:00", "11:00"));
+        reservationService.cancel(memberId, id);
+
+        mvc.perform(post("/reservations/" + id + "/cancel").with(csrf()).with(user(loginMember)))
+                .andExpect(redirectedUrl("/reservations/my"))
+                .andExpect(flash().attribute("errorMessage", "이미 '취소' 상태인 예약입니다."));
+    }
+
+    @Test
+    @DisplayName("CSRF 토큰 없는 취소 요청은 403")
+    void cancel_withoutCsrf() throws Exception {
+        Long id = reservationService.create(memberId,
+                com.example.reservation.service.ReservationTestSupport.form(roomId, "10:00", "11:00"));
+
+        mvc.perform(post("/reservations/" + id + "/cancel").with(user(loginMember)))
+                .andExpect(status().isForbidden());
+    }
+
     private MockHttpServletRequestBuilder validRequest(String start, String end) {
         return post("/reservations").with(csrf()).with(user(loginMember))
                 .param("roomId", roomId.toString())

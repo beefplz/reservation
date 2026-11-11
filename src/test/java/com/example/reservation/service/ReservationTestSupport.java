@@ -27,6 +27,25 @@ public final class ReservationTestSupport {
         return jdbc.queryForObject("SELECT id FROM room WHERE name = ?", Long.class, name);
     }
 
+    /**
+     * 서비스 규칙(과거 불가 등)을 거치지 않고 SQL 로 직접 예약을 넣는다. 지난 예약을 만들 때 쓴다.
+     * startHoursFromNow: 지금 기준 몇 시간 뒤에 시작하는지 (음수면 과거). 길이는 1시간.
+     */
+    public static Long insertReservation(JdbcTemplate jdbc, Long memberId, Long roomId,
+                                         int startHoursFromNow, String status) {
+        String purpose = "직접삽입" + System.nanoTime();
+        jdbc.update("""
+                INSERT INTO reservation (member_id, room_id, start_time, end_time, purpose, status)
+                VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? HOUR),
+                        DATE_ADD(DATE_ADD(NOW(), INTERVAL ? HOUR), INTERVAL 1 HOUR), ?, ?)
+                """, memberId, roomId, startHoursFromNow, startHoursFromNow, purpose, status);
+        return jdbc.queryForObject("SELECT id FROM reservation WHERE purpose = ?", Long.class, purpose);
+    }
+
+    public static String statusOf(JdbcTemplate jdbc, Long reservationId) {
+        return jdbc.queryForObject("SELECT status FROM reservation WHERE id = ?", String.class, reservationId);
+    }
+
     /** "10:00" 처럼 시:분 문자열로 받는다. */
     public static ReservationForm form(Long roomId, String start, String end) {
         ReservationForm f = new ReservationForm();

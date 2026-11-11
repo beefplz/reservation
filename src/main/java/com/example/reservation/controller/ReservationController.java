@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,6 +63,19 @@ public class ReservationController {
             return FORM_VIEW;
         }
         redirectAttributes.addFlashAttribute("successMessage", "예약을 신청했습니다. 관리자 승인 후 확정됩니다.");
+        return "redirect:/reservations/my";
+    }
+
+    /** 취소도 상태를 바꾸는 요청이므로 POST + CSRF 토큰. 본인 확인은 서비스가 로그인 회원 id 로 한다. */
+    @PostMapping("/{id}/cancel")
+    public String cancel(@AuthenticationPrincipal LoginMember loginMember, @PathVariable Long id,
+                         RedirectAttributes redirectAttributes) {
+        try {
+            reservationService.cancel(loginMember.getId(), id);
+            redirectAttributes.addFlashAttribute("successMessage", "예약을 취소했습니다.");
+        } catch (ReservationException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/reservations/my";
     }
 

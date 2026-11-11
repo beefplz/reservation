@@ -5,6 +5,8 @@ import com.example.reservation.domain.Room;
 import com.example.reservation.dto.ReservationForm;
 import com.example.reservation.dto.ReservationView;
 import com.example.reservation.exception.InvalidReservationTimeException;
+import com.example.reservation.exception.InvalidStatusChangeException;
+import com.example.reservation.exception.ReservationNotFoundException;
 import com.example.reservation.exception.ReservationOverlapException;
 import com.example.reservation.exception.RoomNotAvailableException;
 import com.example.reservation.exception.RoomNotFoundException;
@@ -57,6 +59,26 @@ public class ReservationService {
         Reservation reservation = Reservation.newPending(memberId, room.getId(), start, end, form.getPurpose());
         reservationMapper.insert(reservation);
         return reservation.getId();
+    }
+
+    /**
+     * 본인 예약 취소. room 행 잠금은 필요 없다: 취소는 시간을 비워줄 뿐이라 중복이 생길 수 없다.
+     * 대신 상태 확인과 변경을 조건부 UPDATE 한 문장으로 해서, 관리자 승인과 동시에 와도 하나만 성공한다.
+     */
+    @Transactional
+    public void cancel(Long memberId, Long reservationId) {
+        LocalDateTime now = LocalDateTime.now();
+        if (reservationMapper.cancel(reservationId, memberId, now) == 1) {
+            return;
+        }
+        // 실패 이유를 알려주기 위해 다시 조회한다 (남의 예약이면 존재 자체를 숨긴다)
+        Reservation r = reservationMapper.findById(reservationId)
+                .filter(found -> found.getMemberId().equals(memberId))
+                .orElseThrow(() -> new ReservationNotFoundException(reservationId));
+        if (!r.getStatus().isOccupying()) {
+            throw new InvalidStatusChangeException("이미 '" + r.getStatus().getLabel() + "' 상태인 예약입니다.");
+        }
+        throw new InvalidStatusChangeException("이미 시작했거나 지난 예약은 취소할 수 없습니다.");
     }
 
     @Transactional(readOnly = true)
