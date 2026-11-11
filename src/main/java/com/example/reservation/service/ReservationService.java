@@ -1,6 +1,7 @@
 package com.example.reservation.service;
 
 import com.example.reservation.domain.Reservation;
+import com.example.reservation.domain.ReservationStatus;
 import com.example.reservation.domain.Room;
 import com.example.reservation.dto.ReservationForm;
 import com.example.reservation.dto.ReservationView;
@@ -79,6 +80,47 @@ public class ReservationService {
             throw new InvalidStatusChangeException("이미 '" + r.getStatus().getLabel() + "' 상태인 예약입니다.");
         }
         throw new InvalidStatusChangeException("이미 시작했거나 지난 예약은 취소할 수 없습니다.");
+    }
+
+    /**
+     * 관리자 승인: PENDING → APPROVED, 시작 전인 예약만.
+     * room 행 잠금은 필요 없다: PENDING 과 APPROVED 는 둘 다 시간을 차지하므로 겹침 결과가 바뀌지 않는다.
+     */
+    @Transactional
+    public void approve(Long reservationId) {
+        LocalDateTime now = LocalDateTime.now();
+        if (reservationMapper.changeStatus(reservationId, ReservationStatus.PENDING, ReservationStatus.APPROVED, now) == 1) {
+            return;
+        }
+        Reservation r = findOrThrow(reservationId);
+        if (r.getStatus() != ReservationStatus.PENDING) {
+            throw alreadyProcessed(r);
+        }
+        throw new InvalidStatusChangeException("시작 시각이 지난 예약은 승인할 수 없습니다. 거절로 처리하세요.");
+    }
+
+    /** 관리자 거절: PENDING → REJECTED. 시작 시각이 지났어도 거절은 허용한다 (정리용). */
+    @Transactional
+    public void reject(Long reservationId) {
+        if (reservationMapper.changeStatus(reservationId, ReservationStatus.PENDING, ReservationStatus.REJECTED, null) == 1) {
+            return;
+        }
+        throw alreadyProcessed(findOrThrow(reservationId));
+    }
+
+    /** status 가 null 이면 전체. */
+    @Transactional(readOnly = true)
+    public List<ReservationView> findForAdmin(ReservationStatus status) {
+        return reservationMapper.findAllForAdmin(status);
+    }
+
+    private Reservation findOrThrow(Long reservationId) {
+        return reservationMapper.findById(reservationId)
+                .orElseThrow(() -> new ReservationNotFoundException(reservationId));
+    }
+
+    private static InvalidStatusChangeException alreadyProcessed(Reservation r) {
+        return new InvalidStatusChangeException("이미 '" + r.getStatus().getLabel() + "' 상태인 예약입니다.");
     }
 
     @Transactional(readOnly = true)

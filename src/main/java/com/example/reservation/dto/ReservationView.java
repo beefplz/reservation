@@ -21,6 +21,8 @@ public class ReservationView {
     private Long id;
     private Long roomId;
     private String roomName;
+    private String memberName;   // 관리자 목록에서만 채워진다
+    private String loginId;      // 관리자 목록에서만 채워진다
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String purpose;
@@ -29,6 +31,11 @@ public class ReservationView {
     /** 화면에서 취소 버튼을 보여줄지. 실제 취소 가능 여부는 서비스(조건부 UPDATE)가 다시 판단한다. */
     public boolean isCancellable() {
         return status.isOccupying() && startTime.isAfter(LocalDateTime.now());
+    }
+
+    /** 관리자 화면에서 승인 버튼을 보여줄지 (승인 대기 + 시작 전). 최종 판단은 서비스가 한다. */
+    public boolean isApprovable() {
+        return status == ReservationStatus.PENDING && startTime.isAfter(LocalDateTime.now());
     }
 
     /** 예: "2026-11-11 10:00 ~ 11:30" (JSP 에서 ${r.timeRange}) */

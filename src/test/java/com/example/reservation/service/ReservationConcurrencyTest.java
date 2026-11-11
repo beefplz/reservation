@@ -111,6 +111,44 @@ class ReservationConcurrencyTest {
         }
     }
 
+    @Test
+    @DisplayName("사용자 취소와 관리자 승인이 동시에 와도, 취소가 승인에 덮어써지지 않는다")
+    void cancelVsApprove_cancelIsNeverLost() throws Exception {
+        Long memberId = member();
+        Long roomId = room();
+
+        // 가능한 순서는 두 가지뿐이다:
+        //  (a) 취소 → 승인: 승인은 PENDING 이 아니라서 거부. 최종 CANCELED
+        //  (b) 승인 → 취소: APPROVED 도 취소할 수 있으므로 둘 다 성공. 최종 CANCELED
+        // 어느 쪽이든 "취소 성공 + 최종 CANCELED" 여야 한다.
+        // 막아야 할 버그: 승인이 "PENDING 확인 → (그 사이 취소 커밋) → APPROVED 저장" 으로 취소를 덮어쓰는 것.
+        for (int round = 0; round < 20; round++) {
+            Long id = ReservationTestSupport.insertReservation(jdbc, memberId, roomId, 24 + round * 2, "PENDING");
+            AtomicInteger cancelSuccess = new AtomicInteger();
+            AtomicInteger approveSuccess = new AtomicInteger();
+
+            runConcurrently(2, i -> () -> {
+                try {
+                    if (i == 0) {
+                        reservationService.cancel(memberId, id);
+                        cancelSuccess.incrementAndGet();
+                    } else {
+                        reservationService.approve(id);
+                        approveSuccess.incrementAndGet();
+                    }
+                } catch (ReservationException e) {
+                    // 승인은 (a) 순서일 때 거부될 수 있다
+                }
+                return null;
+            });
+
+            assertThat(cancelSuccess.get()).as("round %d: 취소는 항상 성공", round).isEqualTo(1);
+            assertThat(ReservationTestSupport.statusOf(jdbc, id))
+                    .as("round %d: approveSuccess=%d", round, approveSuccess.get())
+                    .isEqualTo("CANCELED");
+        }
+    }
+
     /** count 개의 작업을 CountDownLatch 로 "동시에" 출발시킨다. */
     private void runConcurrently(int count, java.util.function.IntFunction<Callable<Void>> taskFactory)
             throws Exception {

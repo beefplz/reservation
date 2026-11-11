@@ -19,6 +19,7 @@
     <li><a th:href="@{/reservations/new}">예약 신청</a></li>
     <li><a th:href="@{/reservations/my}">내 예약</a></li>
     <li th:if="${loginMember.role.name() == 'ADMIN'}"><a th:href="@{/admin/rooms}">회의실 관리</a></li>
+    <li th:if="${loginMember.role.name() == 'ADMIN'}"><a th:href="@{/admin/reservations(status='PENDING')}">예약 관리</a></li>
 </ul>
 
 <!-- 로그아웃은 POST + CSRF 토큰. GET 링크로 하면 다른 사이트가 몰래 로그아웃시킬 수 있다 -->

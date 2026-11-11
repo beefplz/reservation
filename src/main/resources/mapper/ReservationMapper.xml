@@ -45,6 +45,32 @@
           AND start_time &gt; #{now}
     </update>
 
+    <!-- 관리자 승인/거절. 현재 상태가 from 일 때만 to 로 바꾼다. startAfter 가 있으면 시작 전인 예약만. -->
+    <update id="changeStatus">
+        UPDATE reservation
+        SET status = #{to}
+        WHERE id = #{id}
+          AND status = #{from}
+          <if test="startAfter != null">
+              AND start_time &gt; #{startAfter}
+          </if>
+    </update>
+
+    <!-- 관리자 목록. status 가 없으면 전체. 가까운 예약부터 보이도록 시작 시각 오름차순 -->
+    <select id="findAllForAdmin" resultType="com.example.reservation.dto.ReservationView">
+        SELECT r.id, r.room_id, rm.name AS room_name, m.name AS member_name, m.login_id,
+               r.start_time, r.end_time, r.purpose, r.status
+        FROM reservation r
+        JOIN room rm ON rm.id = r.room_id
+        JOIN member m ON m.id = r.member_id
+        <where>
+            <if test="status != null">
+                r.status = #{status}
+            </if>
+        </where>
+        ORDER BY r.start_time
+    </select>
+
     <select id="findByMemberId" resultType="com.example.reservation.dto.ReservationView">
         SELECT r.id, r.room_id, rm.name AS room_name,
                r.start_time, r.end_time, r.purpose, r.status
