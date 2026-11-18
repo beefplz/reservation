@@ -92,6 +92,7 @@ WHERE id = ? AND status = 'PENDING' AND start_time > ?
 - **비밀번호**: BCrypt 해시로 저장하고, DB 비밀번호는 환경변수(`DB_PASSWORD`)로만 받습니다.
 - **CSRF**: 상태를 바꾸는 요청은 모두 POST이고 CSRF 토큰을 검사합니다.
 - **XSS**: JSP는 `<c:out>`과 Spring 폼 태그, Thymeleaf는 `th:text`로 출력값을 이스케이프합니다.
+- **오류 화면**: 404·403·500 등은 공통 오류 화면(`templates/error.html`)에서 한국어로 안내합니다. 예외 메시지와 스택 트레이스는 화면에 보여주지 않습니다.
 
 ### 5. Thymeleaf와 JSP를 함께 쓰는 구성
 
@@ -178,7 +179,7 @@ export DB_PASSWORD=<비밀번호>
 ./gradlew test
 ```
 
-테스트 97개는 실제 MySQL의 `reservation_test` DB에서 실행됩니다. 각 테스트는 끝나면 롤백되고, 동시성 테스트는 만든 데이터를 직접 지웁니다.
+테스트 103개는 실제 MySQL의 `reservation_test` DB에서 실행됩니다. 각 테스트는 끝나면 롤백되고, 동시성 테스트는 만든 데이터를 직접 지웁니다.
 
 | 테스트 | 검증 내용 |
 |---|---|
@@ -187,3 +188,4 @@ export DB_PASSWORD=<비밀번호>
 | `ReservationCancelTest`, `ReservationApprovalTest` | 상태 변경 규칙 |
 | `ReservationTimeRuleTest` | 30분 단위, 최대 4시간, 과거 불가 (DB 없이) |
 | `*ControllerTest`, `*IntegrationTest` | 로그인 필요, USER/ADMIN 권한, CSRF, 남의 예약 404 |
+| `ErrorPageTest` | 상태 코드별 오류 화면, 500 화면에 내부 정보가 노출되지 않음 |

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<!--
+    공통 오류 화면.
+    오류가 나면 Spring Boot 가 /error 로 보내고, BasicErrorController 가 이 "error" 화면을 그린다.
+    모델에는 status(상태 코드), error(상태 이름), path(요청 주소), timestamp 가 들어 있다.
+    예외 메시지와 스택 트레이스는 기본 설정상 모델에 넣지 않는다 → 내부 정보가 화면에 노출되지 않는다.
+-->
+<head>
+    <meta charset="UTF-8">
+    <title>오류 - 회의실 예약</title>
+    <style>
+        body { font-family: sans-serif; max-width: 520px; margin: 80px auto; text-align: center; color: #222; }
+        .code { font-size: 48px; font-weight: bold; color: #888; margin: 0; }
+        h1 { font-size: 22px; margin: 8px 0 16px; }
+        p { color: #555; line-height: 1.6; }
+        a { margin: 0 8px; }
+    </style>
+</head>
+<body>
+<p class="code" th:text="${status}">404</p>
+
+<!-- th:switch: 상태 코드별로 제목과 안내 문구를 고른다 -->
+<div th:switch="${status}">
+    <div th:case="404">
+        <h1>페이지를 찾을 수 없습니다</h1>
+        <p>주소가 잘못되었거나, 없는 회의실·예약입니다.</p>
+    </div>
+    <div th:case="403">
+        <h1>접근 권한이 없습니다</h1>
+        <p>관리자만 쓸 수 있는 화면이거나, 화면을 오래 열어 두어 요청이 만료되었습니다.<br>
+            다시 로그인한 뒤 시도해 주세요.</p>
+    </div>
+    <div th:case="400">
+        <h1>잘못된 요청입니다</h1>
+        <p>입력값을 확인한 뒤 다시 시도해 주세요.</p>
+    </div>
+    <div th:case="500">
+        <h1>일시적인 오류가 발생했습니다</h1>
+        <p>잠시 후 다시 시도해 주세요.<br>문제가 계속되면 관리자에게 알려주세요.</p>
+    </div>
+    <div th:case="*">
+        <h1>요청을 처리하지 못했습니다</h1>
+        <p>잠시 후 다시 시도해 주세요.</p>
+    </div>
+</div>
+
+<p>
+    <a th:href="@{/}">처음으로</a>
+    <a th:href="@{/login}">로그인</a>
+</p>
+</body>
+</html>
